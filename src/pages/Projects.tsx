@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useProjects } from "../hooks/useProjects";
+import { useDebounce } from "../hooks/useDebounce";
 import TaskItem from "../components/TaskItem";
 import type { TaskStatus } from "../types";
 
@@ -17,6 +18,7 @@ function Projects() {
 
   const [projectName, setProjectName] = useState("");
   const [taskTitle, setTaskTitle] = useState("");
+  const debouncedTaskTitle = useDebounce(taskTitle, 500);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null
   );
@@ -72,7 +74,9 @@ function Projects() {
           />
           <button
             onClick={() => {
-              addTask(selectedProject.id, taskTitle);
+              if (!debouncedTaskTitle.trim()) return;
+              if (!selectedProjectId) return;
+              addTask(selectedProjectId, debouncedTaskTitle);
               setTaskTitle("");
             }}
           >

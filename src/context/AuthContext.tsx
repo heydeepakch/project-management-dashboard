@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext } from 'react'
+import { useLocalStorage } from '../hooks/useLocalStorage'
 
 type User = {
   email: string
@@ -13,14 +14,18 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const {
+    value: user,
+    setStoredValue: setUser,
+    removeValue: clearUser
+  } = useLocalStorage<User | null>('auth_user', null)
 
   const login = (email: string) => {
     setUser({ email })
   }
 
   const logout = () => {
-    setUser(null)
+    clearUser()
   }
 
   return (
@@ -31,9 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
-  return context
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth must be used inside AuthProvider')
+  return ctx
 }
